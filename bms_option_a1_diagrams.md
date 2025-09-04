@@ -1,45 +1,47 @@
-# BMS Training Demo — Option A1 Diagrams
+# BMS Training Demo — Option A1 Diagrams (Fixed Mermaid)
 
 This document contains the **System Diagram** for **Option A1** (STM32 + TCAN1042 + BQ76952EVM + INA226) and the **Software Architecture Diagram** for the training platform.
 
+> **Note:** To maximize compatibility with GitHub’s Mermaid renderer, this version avoids non‑ASCII punctuation, HTML line breaks, and edges that target subgraph IDs.
+
 ---
 
-## 1) System Diagram — Option A1
+## 1) System Diagram — Option A1 (GitHub‑compatible Mermaid)
 
 ```mermaid
 flowchart LR
   %% ===== PC / Host Side =====
-  subgraph PC[PC / Host]
-    CANable[CANable 2.0<br/>USB–CAN FD]
-    Logger[Jupyter / Python Logger]
+  subgraph PC["PC / Host"]
+    CANable["CANable 2.0 (USB-CAN FD)"]
+    Logger["Jupyter / Logger"]
   end
 
   %% ===== MCU Board =====
-  subgraph MCU[NUCLEO‑G474RE (STM32G474)]
-    FDCAN[FDCAN]
-    I2C[I2C1]
-    USB[USB‑CDC (optional)]
-    GPIO[GPIO / PWM]
+  subgraph MCU["NUCLEO-G474RE (STM32G474)"]
+    FDCAN["FDCAN"]
+    I2C["I2C1"]
+    USB["USB-CDC (optional)"]
+    GPIO["GPIO / PWM"]
   end
 
   %% ===== Transceiver =====
-  TCAN[TCAN1042<br/>CAN FD Transceiver]
+  TCAN["TCAN1042 (CAN FD Transceiver)"]
 
   %% ===== Battery AFE / EVM =====
-  subgraph AFE[BQ76952EVM (AFE + FETs + NTCs + cell dividers)]
-    Cells[4× LFP 18650 (training)<br/>→ 3–16s inputs]
-    NTCs[NTC thermistors (2–9)]
-    FETs[Charge / Discharge FETs<br/>+ Pre‑charge path]
-    CC[Coulomb counter & protections<br/>(OV/UV/OT/OC/SC)]
+  subgraph AFE["BQ76952EVM (AFE + FETs + NTCs + dividers)"]
+    Cells["4x LFP 18650 -> 3-16s inputs"]
+    NTCs["NTC thermistors"]
+    FETs["Charge / Discharge FETs + Pre-charge"]
+    CC["Coulomb counter and protections"]
   end
 
   %% ===== Additional Sensors & Power Path =====
-  INA[INA226 Current/Power Monitor]
-  Load[Load: MOSFET + Power Resistor<br/>or DC Electronic Load]
-  Charger[Charger (optional)]
+  INA["INA226 Current/Power Monitor"]
+  Load["Load: MOSFET + Power Resistor or DC Electronic Load"]
+  Charger["Charger (optional)"]
 
   %% ===== CAN Bus =====
-  CANbus((CAN Bus))
+  CANbus(("CAN Bus"))
 
   %% Connections
   PC --- CANable
@@ -48,7 +50,7 @@ flowchart LR
   TCAN <--> FDCAN
   I2C <--> AFE
   I2C <--> INA
-  USB --- MCU
+  USB --- Logger
   Cells --> AFE
   NTCs --> AFE
   AFE --> FETs --> Load
@@ -56,39 +58,39 @@ flowchart LR
 ```
 
 **Signals & Interfaces**
-- **I²C1** ↔ **BQ76952EVM** (cell voltages, temperatures, coulomb counter, commands)  
-- **I²C1** ↔ **INA226** (pack current & bus voltage)  
-- **FDCAN** ↔ **TCAN1042** ↔ **CANable/PC** (telemetry, DTCs, control)  
-- **USB‑CDC** (optional) for CSV logging / firmware debug  
-- **Cells/NTCs** wired to the **EVM**; **FETs/pre‑charge** drive the **load/charger**
+- **I2C1** <-> **BQ76952EVM** (cell voltages, temperatures, coulomb counter, commands)  
+- **I2C1** <-> **INA226** (pack current and bus voltage)  
+- **FDCAN** <-> **TCAN1042** <-> **CANable/PC** (telemetry, DTCs, control)  
+- **USB-CDC** (optional) for CSV logging / firmware debug  
+- **Cells/NTCs** wired to the **EVM**; **FETs/pre-charge** drive the **load/charger**
 
 ---
 
-## 2) Software Architecture Diagram
+## 2) Software Architecture Diagram (GitHub‑compatible Mermaid)
 
 ```mermaid
 flowchart TB
-  subgraph Platform[Platform / Drivers]
-    HAL[HAL Drivers: I²C, FDCAN, GPIO, Timers, ADC, NVM]
-    BQ[BQ76952 Driver]
-    INA[INA226 Driver]
+  subgraph Platform["Platform / Drivers"]
+    HAL["HAL Drivers: I2C, FDCAN, GPIO, Timers, ADC, NVM"]
+    BQ["BQ76952 Driver"]
+    INA["INA226 Driver"]
   end
 
-  subgraph Services[Core Services]
-    Sched[Scheduler (bare‑metal or RTOS)]
-    Sampler[Sampler<br/>I:100 Hz, V:10 Hz, T:1 Hz]
-    SOC[SOC Estimator<br/>Coulomb Count + OCV (rest)<br/>EKF/UKF optional]
-    SOH[SOH Estimator<br/>Capacity & R_int pulses]
-    Safety[Safety Manager<br/>OV/UV, OT/UT, OC/SC → safe state]
-    Balance[Balancing Manager (v2)<br/>Autonomous/Host‑controlled]
-    Comm[Comms<br/>FDCAN frames; USB‑CDC CSV]
-    Diag[Diagnostics/DTC Mapping]
+  subgraph Services["Core Services"]
+    Sched["Scheduler (bare-metal or RTOS)"]
+    Sampler["Sampler: I 100 Hz, V 10 Hz, T 1 Hz"]
+    SOC["SOC Estimator: Coulomb + OCV (rest), EKF/UKF optional"]
+    SOH["SOH Estimator: Capacity and R_int pulses"]
+    Safety["Safety Manager: OV/UV, OT/UT, OC/SC -> safe state"]
+    Balance["Balancing Manager (v2): Autonomous or Host-controlled"]
+    Comm["Comms: FDCAN frames; USB-CDC CSV"]
+    Diag["Diagnostics / DTC Mapping"]
   end
 
-  subgraph Data[Calibration & Tables]
-    OCV[(OCV–SOC Table)]
-    Cal[(Calibration & Limits in NVM)]
-    Logs[(CSV Logs)]
+  subgraph Data["Calibration and Tables"]
+    OCV["OCV-SOC Table"]
+    Cal["Calibration and Limits in NVM"]
+    Logs["CSV Logs"]
   end
 
   HAL --> BQ
@@ -107,10 +109,10 @@ flowchart TB
   Cal --> SOH
   Cal --> Safety
   Cal --> Balance
-  SOC -- plausibility/limits --> Safety
-  SOH -- trend flags --> Safety
-  Safety -- open FETs / inhibit charge --> BQ
-  Balance -- bleed commands --> BQ
+  SOC --> Safety
+  SOH --> Safety
+  Safety --> BQ
+  Balance --> BQ
 ```
 
 ---
@@ -118,10 +120,10 @@ flowchart TB
 ## 3) ASCII Fallback (System)
 
 ```
- PC/Jupyter  --USB-->  CANable  ==CAN==  TCAN1042  <== FDCAN ==>  STM32G474 (NUCLEO)
-                                         |
-                               I2C1 <----+---->  BQ76952EVM (cells, NTCs, FETs, coulomb)
-                               I2C1 <---------->  INA226 (shunt)
-  Cells/NTCs --> BQ76952EVM --> FETs/Precharge --> Load / Charger
-  USB‑CDC (optional) <------> STM32G474 (CSV logging)
+ PC/Jupyter  --USB-->  CANable  == CAN ==  TCAN1042  <== FDCAN ==>  STM32G474 (NUCLEO)
+                                          |
+                                I2C1 <----+---->  BQ76952EVM (cells, NTCs, FETs, coulomb)
+                                I2C1 <---------->  INA226 (shunt)
+ Cells/NTCs --> BQ76952EVM --> FETs/Precharge --> Load / Charger
+ USB-CDC (optional) <------> PC Logger
 ```
